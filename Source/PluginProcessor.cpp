@@ -166,7 +166,8 @@ bool SimpleMultiBandCompAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* SimpleMultiBandCompAudioProcessor::createEditor()
 {
-    return new SimpleMultiBandCompAudioProcessorEditor (*this);
+    //return new SimpleMultiBandCompAudioProcessorEditor (*this);
+    return new juce::GenericAudioProcessorEditor(*this);
 }
 
 //==============================================================================
@@ -181,6 +182,37 @@ void SimpleMultiBandCompAudioProcessor::setStateInformation (const void* data, i
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
+}
+
+juce::AudioProcessorValueTreeState::ParameterLayout
+SimpleMultiBandCompAudioProcessor::createParameterLayout()
+{
+    juce::AudioProcessorValueTreeState::ParameterLayout layout;
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>("LowCut Freq", "LowCut Freq", 10.f, 20000.f, 20));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>("HighCut Freq", "HighCut Freq", 10.f, 20000.f, 20000));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Peak Freq", "Peak Freq", 10.f, 20000.f, 750 ));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Peak Gain", "Peak Gain", -24.f, 24.f, 0.0f));
+        
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Peak Quality", "Peak Quality", 0.1f, 10.f, 1.f));
+
+    juce::StringArray stringArray;
+    for (int i = 0; i < 4; ++i)
+    {
+        juce::String str;
+        str << (12 + i * 12);
+        str << " db/Oct";
+        stringArray.add(str);
+    }
+
+    layout.add(std::make_unique<juce::AudioParameterChoice>("LowCut Slope", "LowCutSlope", stringArray, 0));
+
+    layout.add(std::make_unique<juce::AudioParameterChoice>("HighCut Slope", "HighCutSlope", stringArray, 0));
+
+    return layout;
 }
 
 //==============================================================================
