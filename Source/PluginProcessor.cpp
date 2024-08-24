@@ -104,12 +104,7 @@ void SimpleMultiBandCompAudioProcessor::prepareToPlay(double sampleRate, int sam
     leftChain.prepare(spec);
     rightChain.prepare(spec);
 
-    auto chainSettings = getChainSettings(apvts);
-
-    updatePeakFilter(chainSettings);
-
-    // introduce low cut parameters for left and right chain
-    updateFilters(chainSettings);
+    updateFilters(); 
 }
 
 void SimpleMultiBandCompAudioProcessor::releaseResources()
@@ -159,11 +154,7 @@ void SimpleMultiBandCompAudioProcessor::processBlock (juce::AudioBuffer<float>& 
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    auto chainSettings = getChainSettings(apvts);
-
-    updatePeakFilter(chainSettings);
-
-    updateFilters(chainSettings);
+    updateFilters();
 
     juce::dsp::AudioBlock<float> block(buffer);
 
@@ -290,10 +281,13 @@ void SimpleMultiBandCompAudioProcessor::updateHighCutFilters(const ChainSettings
     updateCutFilter(rightHighCut, highCutCoefficients, chainSettings.highCutSlope);
 }
 
-void SimpleMultiBandCompAudioProcessor::updateFilters(const ChainSettings& chainSettings)
+void SimpleMultiBandCompAudioProcessor::updateFilters()
 {
+    auto chainSettings = getChainSettings(apvts);
+
     updateLowCutFilters(chainSettings);
     updateHighCutFilters(chainSettings);
+    updatePeakFilter(chainSettings);
 }
 
 
