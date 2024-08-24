@@ -113,9 +113,10 @@ void SimpleMultiBandCompAudioProcessor::prepareToPlay(double sampleRate, int sam
         (chainSettings.lowCutSlope + 1) * 2);
 
     auto& leftLowCut = leftChain.get<ChainPositions::LowCut>();
+    updateCutFilter(leftLowCut, cutCoefficients, chainSettings.lowCutSlope);
     auto& rightLowCut = rightChain.get<ChainPositions::LowCut>();
 
-    updateCutFilter(leftLowCut, cutCoefficients, chainSettings.lowCutSlope);
+    
     updateCutFilter(rightLowCut, cutCoefficients, chainSettings.lowCutSlope);
 }
 
