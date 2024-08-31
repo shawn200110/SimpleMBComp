@@ -9,25 +9,8 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-
-//==============================================================================
-SimpleMultiBandCompAudioProcessorEditor::SimpleMultiBandCompAudioProcessorEditor(SimpleMultiBandCompAudioProcessor& p)
-    : AudioProcessorEditor(&p), audioProcessor(p),
-    peakFreqSliderAttachment(audioProcessor.apvts, "Peak Freq", peakFreqSlider),
-    peakGainSliderAttachment(audioProcessor.apvts, "Peak Gain", peakGainSlider),
-    peakQualitySliderAttachment(audioProcessor.apvts, "Peak Quality", peakQualitySlider),
-    lowCutFreqSliderAttachment(audioProcessor.apvts, "LowCut Freq", lowCutFreqSlider),
-    lowCutSlopeSliderAttachment(audioProcessor.apvts, "LowCut Slope", lowCutSlopeSlider),
-    highCutFreqSliderAttachment(audioProcessor.apvts, "HighCut Freq", highCutFreqSlider),
-    highCutSlopeSliderAttachment(audioProcessor.apvts, "HighCut Slope", highCutSlopeSlider)
+ResponseCurveComponent::ResponseCurveComponent(SimpleMultiBandCompAudioProcessor& p) : audioProcessor(p)
 {
-    // Make sure that before the constructor has finished, you've set the
-    // editor's size to whatever you need it to be.
-    for (auto* comp : getComps())
-    {
-        addAndMakeVisible(comp);
-    }
-
     const auto& params = audioProcessor.getParameters();
     for (auto param : params)
     {
@@ -35,29 +18,25 @@ SimpleMultiBandCompAudioProcessorEditor::SimpleMultiBandCompAudioProcessorEditor
     }
 
     startTimerHz(60);
-
-    setSize (600, 400);
 }
 
-SimpleMultiBandCompAudioProcessorEditor::~SimpleMultiBandCompAudioProcessorEditor()
+ResponseCurveComponent::~ResponseCurveComponent()
 {
     const auto& params = audioProcessor.getParameters();
-    for (auto param : params)    
+    for (auto param : params)
     {
         param->removeListener(this);
     }
 }
 
-//==============================================================================
-void SimpleMultiBandCompAudioProcessorEditor::paint (juce::Graphics& g)
+void ResponseCurveComponent::paint(juce::Graphics& g)
 {
 
     using namespace juce;
     // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll (Colours::darkolivegreen);
+    g.fillAll(Colours::darkolivegreen);
 
-    auto bounds = getLocalBounds();
-    auto responseArea = bounds.removeFromTop(bounds.getHeight() * 0.33);
+    auto responseArea = getLocalBounds();
     auto w = responseArea.getWidth();
 
     auto& lowcut = monoChain.get<ChainPositions::LowCut>();
@@ -124,36 +103,14 @@ void SimpleMultiBandCompAudioProcessorEditor::paint (juce::Graphics& g)
     }
 }
 
-void SimpleMultiBandCompAudioProcessorEditor::resized()
-{
-    // This is generally where you'll want to lay out the positions of any
-    // subcomponents in your editor..
-
-    auto bounds = getLocalBounds();
-    auto responseArea = bounds.removeFromTop(bounds.getHeight() * 0.33);
-
-    auto lowCutArea = bounds.removeFromLeft(bounds.getWidth() * 0.33);
-    auto highCutArea = bounds.removeFromRight(bounds.getWidth() * 0.5);
-
-    lowCutFreqSlider.setBounds(lowCutArea.removeFromTop(lowCutArea.getHeight() * 0.5));
-    lowCutSlopeSlider.setBounds(lowCutArea);
-
-    highCutFreqSlider.setBounds(highCutArea.removeFromTop(highCutArea.getHeight() * 0.5));
-    highCutSlopeSlider.setBounds(highCutArea);
 
 
-    peakFreqSlider.setBounds(bounds.removeFromTop(bounds.getHeight() * 0.33));
-    peakGainSlider.setBounds(bounds.removeFromTop(bounds.getHeight() * 0.5));
-
-    peakQualitySlider.setBounds(bounds);
-}
-
-void SimpleMultiBandCompAudioProcessorEditor::parameterValueChanged(int parameterIndex, float newValue)
+void ResponseCurveComponent::parameterValueChanged(int parameterIndex, float newValue)
 {
     parametersChanged.set(true);
 }
 
-void SimpleMultiBandCompAudioProcessorEditor::timerCallback()
+void ResponseCurveComponent::timerCallback()
 {
     if (parametersChanged.compareAndSetBool(false, true))
     {
@@ -172,6 +129,72 @@ void SimpleMultiBandCompAudioProcessorEditor::timerCallback()
     }
 }
 
+//==============================================================================
+SimpleMultiBandCompAudioProcessorEditor::SimpleMultiBandCompAudioProcessorEditor(SimpleMultiBandCompAudioProcessor& p)
+    : AudioProcessorEditor(&p), audioProcessor(p),
+    responseCurveComponent(audioProcessor),
+    peakFreqSliderAttachment(audioProcessor.apvts, "Peak Freq", peakFreqSlider),
+    peakGainSliderAttachment(audioProcessor.apvts, "Peak Gain", peakGainSlider),
+    peakQualitySliderAttachment(audioProcessor.apvts, "Peak Quality", peakQualitySlider),
+    lowCutFreqSliderAttachment(audioProcessor.apvts, "LowCut Freq", lowCutFreqSlider),
+    lowCutSlopeSliderAttachment(audioProcessor.apvts, "LowCut Slope", lowCutSlopeSlider),
+    highCutFreqSliderAttachment(audioProcessor.apvts, "HighCut Freq", highCutFreqSlider),
+    highCutSlopeSliderAttachment(audioProcessor.apvts, "HighCut Slope", highCutSlopeSlider)
+{
+    // Make sure that before the constructor has finished, you've set the
+    // editor's size to whatever you need it to be.
+    for (auto* comp : getComps())
+    {
+        addAndMakeVisible(comp);
+    }
+
+    setSize (600, 400);
+}
+
+SimpleMultiBandCompAudioProcessorEditor::~SimpleMultiBandCompAudioProcessorEditor()
+{
+}
+
+//==============================================================================
+void SimpleMultiBandCompAudioProcessorEditor::paint (juce::Graphics& g)
+{
+
+    using namespace juce;
+    // (Our component is opaque, so we must completely fill the background with a solid colour)
+    g.fillAll (Colours::darkolivegreen);
+
+    auto bounds = getLocalBounds();
+    auto responseArea = bounds.removeFromTop(bounds.getHeight() * 0.33);
+    auto w = responseArea.getWidth();
+}
+
+void SimpleMultiBandCompAudioProcessorEditor::resized()
+{
+    // This is generally where you'll want to lay out the positions of any
+    // subcomponents in your editor..
+
+    auto bounds = getLocalBounds();
+    auto responseArea = bounds.removeFromTop(bounds.getHeight() * 0.33);
+
+    responseCurveComponent.setBounds(responseArea);
+
+    auto lowCutArea = bounds.removeFromLeft(bounds.getWidth() * 0.33);
+    auto highCutArea = bounds.removeFromRight(bounds.getWidth() * 0.5);
+
+    lowCutFreqSlider.setBounds(lowCutArea.removeFromTop(lowCutArea.getHeight() * 0.5));
+    lowCutSlopeSlider.setBounds(lowCutArea);
+
+    highCutFreqSlider.setBounds(highCutArea.removeFromTop(highCutArea.getHeight() * 0.5));
+    highCutSlopeSlider.setBounds(highCutArea);
+
+
+    peakFreqSlider.setBounds(bounds.removeFromTop(bounds.getHeight() * 0.33));
+    peakGainSlider.setBounds(bounds.removeFromTop(bounds.getHeight() * 0.5));
+
+    peakQualitySlider.setBounds(bounds);
+}
+
+
 std::vector<juce::Component*> SimpleMultiBandCompAudioProcessorEditor::getComps()
 {
     return
@@ -182,6 +205,7 @@ std::vector<juce::Component*> SimpleMultiBandCompAudioProcessorEditor::getComps(
         &lowCutFreqSlider,
         &highCutFreqSlider,
         &lowCutSlopeSlider,
-        &highCutSlopeSlider
+        &highCutSlopeSlider,
+        &responseCurveComponent
     };
 }
