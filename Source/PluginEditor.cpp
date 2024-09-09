@@ -315,9 +315,7 @@ void ResponseCurveComponent::resized()
 
         for (auto gDb : gain)
         {
-            auto y = jmap(gDb, -24.f, 24.f, float(getHeight()), 0.f);
-            //g.drawHorizontalLine(y, 0, getWidth());
-            g.setColour(gDb == 0.f ? Colours::white : Colours::lavender);
+            auto y = jmap(gDb, -24.f, 24.f, float(bottom), float(top));
             g.drawHorizontalLine(y, left, right);
         }
 
@@ -354,6 +352,27 @@ void ResponseCurveComponent::resized()
             g.drawFittedText(str, r, juce::Justification::verticallyCentred, 1);
 
         }
+
+        for (auto gDb : gain)
+        {
+            auto y = jmap(gDb, -24.f, 24.f, float(bottom), float(top));
+
+            String str;
+            if (gDb > 0) str << "+";
+            str << gDb;
+
+            auto textWidth = g.getCurrentFont().getStringWidth(str);
+
+            Rectangle<int> r;
+            r.setSize(textWidth, fontHeight);
+            r.setX(getWidth() - textWidth);
+            r.setCentre(r.getCentreX(), y);
+
+            g.drawFittedText(str, r, juce::Justification::centred, 1);
+        }
+
+        /*g.setColour(Colours::orange);
+        g.drawRect(getAnalysisArea());*/
 }
 
 juce::Rectangle<int> ResponseCurveComponent::getRenderArea()
