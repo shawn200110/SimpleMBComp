@@ -64,13 +64,20 @@ struct ResponseCurveComponent : juce::Component,
     void timerCallback() override;
 
     void paint(juce::Graphics& g) override;
-
+    void resized() override;
 private:
     SimpleMultiBandCompAudioProcessor& audioProcessor;
     MonoChain monoChain;
     juce::Atomic<bool> parametersChanged{ false };
 
     void updateChain();
+
+    juce::Image background;
+
+    juce::Rectangle<int> getRenderArea();
+
+    juce::Rectangle<int> getAnalysisArea();
+
 };
 
 //==============================================================================
