@@ -105,6 +105,12 @@ void SimpleMultiBandCompAudioProcessor::prepareToPlay(double sampleRate, int sam
     rightChain.prepare(spec);
 
     updateFilters(); 
+
+    DBG("filters Updated");
+    leftChannelFifo.prepare(samplesPerBlock);
+    rightChannelFifo.prepare(samplesPerBlock);
+
+    DBG("Left/Right Channel FIFOs prepared.");
 }
 
 void SimpleMultiBandCompAudioProcessor::releaseResources()
@@ -166,6 +172,9 @@ void SimpleMultiBandCompAudioProcessor::processBlock (juce::AudioBuffer<float>& 
 
     leftChain.process(leftContext);
     rightChain.process(rightContext);
+
+    leftChannelFifo.update(buffer);
+    rightChannelFifo.update(buffer);
 }
 
 //==============================================================================
