@@ -181,6 +181,7 @@ ResponseCurveComponent::ResponseCurveComponent(SimpleMultiBandCompAudioProcessor
 
     leftChannelFFTDataGenerator.changeOrder(FFTOrder::order2048);
     monoBuffer.setSize(1, leftChannelFFTDataGenerator.getFFTSize());
+    leftChannelFifo->getAudioBuffer(monoBuffer);
 
     updateChain();
     startTimerHz(60);
